@@ -6,6 +6,8 @@ import {
   Plus,
   Clock,
   Dumbbell,
+  Save,
+  FileText,
 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { calculateTotalDuration, formatDurationShort } from '../utils/timeCalculator';
@@ -13,10 +15,12 @@ import { downloadJSON } from '../utils/storage';
 
 interface HeaderProps {
   onAddAction: () => void;
+  onSaveTemplate: () => void;
+  onOpenTemplates: () => void;
 }
 
-export function Header({ onAddAction }: HeaderProps) {
-  const { actions, plannedDuration, toggleExecutionMode, exportJSON } =
+export function Header({ onAddAction, onSaveTemplate, onOpenTemplates }: HeaderProps) {
+  const { actions, plannedDuration, toggleExecutionMode, exportJSON, templates } =
     useWorkoutStore();
   const [showImport, setShowImport] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +96,31 @@ export function Header({ onAddAction }: HeaderProps) {
               <Plus className="w-4 h-4" />
               添加动作
             </button>
+
+            <button
+              onClick={onSaveTemplate}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors font-medium text-sm"
+              title="保存当前计划为模板"
+            >
+              <Save className="w-4 h-4" />
+              保存模板
+            </button>
+
+            <button
+              onClick={onOpenTemplates}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors font-medium text-sm relative"
+              title="打开模板库"
+            >
+              <FileText className="w-4 h-4" />
+              模板库
+              {templates.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {templates.length}
+                </span>
+              )}
+            </button>
+
+            <div className="w-px h-6 bg-zinc-700 mx-1" />
 
             <button
               onClick={handleImportClick}

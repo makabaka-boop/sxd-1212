@@ -1,7 +1,8 @@
-import type { WorkoutAction } from '../types';
+import type { WorkoutAction, WorkoutTemplate } from '../types';
 
 const STORAGE_KEY = 'workout-planner-data';
 const PLAN_DURATION_KEY = 'workout-planner-plan-duration';
+const TEMPLATES_KEY = 'workout-planner-templates';
 
 export function saveToStorage(actions: WorkoutAction[]): void {
   try {
@@ -71,5 +72,26 @@ export function importFromJSON(jsonString: string): WorkoutAction[] | null {
   } catch (error) {
     console.error('解析JSON失败:', error);
     return null;
+  }
+}
+
+export function saveTemplatesToStorage(templates: WorkoutTemplate[]): void {
+  try {
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+  } catch (error) {
+    console.error('保存模板失败:', error);
+  }
+}
+
+export function loadTemplatesFromStorage(): WorkoutTemplate[] {
+  try {
+    const data = localStorage.getItem(TEMPLATES_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error('加载模板失败:', error);
+    return [];
   }
 }

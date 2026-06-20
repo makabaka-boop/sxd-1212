@@ -6,6 +6,8 @@ import { ActionForm } from '../components/ActionForm';
 import { BatchToolbar } from '../components/BatchToolbar';
 import { RiskAlert } from '../components/RiskAlert';
 import { ExecutionMode } from '../components/ExecutionMode';
+import { SaveTemplateDialog } from '../components/SaveTemplateDialog';
+import { TemplatePanel } from '../components/TemplatePanel';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { filterActions } from '../utils/filterActions';
 import type { WorkoutAction } from '../types';
@@ -16,6 +18,8 @@ export default function Home() {
   const [editingAction, setEditingAction] = useState<WorkoutAction | null>(
     null
   );
+  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
+  const [isTemplatePanelOpen, setIsTemplatePanelOpen] = useState(false);
 
   useEffect(() => {
     init();
@@ -42,7 +46,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <Header onAddAction={handleAddAction} />
+      <Header
+        onAddAction={handleAddAction}
+        onSaveTemplate={() => setIsSaveTemplateOpen(true)}
+        onOpenTemplates={() => setIsTemplatePanelOpen(true)}
+      />
 
       <div className="flex">
         <FilterPanel />
@@ -73,6 +81,16 @@ export default function Home() {
         action={editingAction}
         isOpen={isFormOpen}
         onClose={handleCloseForm}
+      />
+
+      <SaveTemplateDialog
+        isOpen={isSaveTemplateOpen}
+        onClose={() => setIsSaveTemplateOpen(false)}
+      />
+
+      <TemplatePanel
+        isOpen={isTemplatePanelOpen}
+        onClose={() => setIsTemplatePanelOpen(false)}
       />
 
       {isExecutionMode && <ExecutionMode />}

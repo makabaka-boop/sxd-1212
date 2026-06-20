@@ -4,6 +4,7 @@ import type {
   FilterOptions,
   ActionStatus,
   Intensity,
+  WorkoutTemplate,
 } from '../types';
 import { defaultActions } from '../data/defaultActions';
 import {
@@ -11,6 +12,8 @@ import {
   saveToStorage,
   loadPlanDuration,
   savePlanDuration,
+  loadTemplatesFromStorage,
+  saveTemplatesToStorage,
 } from '../utils/storage';
 
 interface WorkoutState {
@@ -20,6 +23,7 @@ interface WorkoutState {
   plannedDuration: number;
   isExecutionMode: boolean;
   currentActionIndex: number;
+  templates: WorkoutTemplate[];
 
   init: () => void;
   addAction: (action: Omit<WorkoutAction, 'id' | 'order'>) => void;
@@ -42,6 +46,10 @@ interface WorkoutState {
   exportJSON: () => string;
   importJSON: (jsonString: string) => boolean;
   getFilteredActions: () => WorkoutAction[];
+  saveAsTemplate: (name: string, description: string) => void;
+  deleteTemplate: (id: string) => void;
+  applyTemplate: (id: string) => void;
+  updateTemplate: (id: string, updates: Partial<WorkoutTemplate>) => void;
 }
 
 function generateId(): string {
@@ -64,14 +72,16 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   plannedDuration: 60,
   isExecutionMode: false,
   currentActionIndex: 0,
+  templates: [],
 
   init: () => {
     const storedActions = loadFromStorage();
     const storedDuration = loadPlanDuration();
+    const storedTemplates = loadTemplatesFromStorage();
     if (storedActions && storedActions.length > 0) {
-      set({ actions: storedActions, plannedDuration: storedDuration });
+      set({ actions: storedActions, plannedDuration: storedDuration, templates: storedTemplates });
     } else {
-      set({ actions: defaultActions, plannedDuration: storedDuration });
+      set({ actions: defaultActions, plannedDuration: storedDuration, templates: storedTemplates });
       saveToStorage(defaultActions);
     }
   },
@@ -288,5 +298,61 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       }
       return true;
     });
+  },
+
+  saveAsTemplate: (name, description) => {
+    const { actions, templates } = get();
+    const now = Date.now();
+    const newTemplate: WorkoutTemplate = {
+      id: generateId(),
+      name,
+      description,
+      actions: actions.map((a) => ({ ...a })),
+      createdAt: now,
+      updatedAt: now,
+    };
+    const newTemplates = [...templates, newTemplate];
+    set({ templates: newTemplates });
+    saveTemplatesToStorage(newTemplates);
+  },
+
+  deleteTemplate: (id) => {
+    const { templates } = get();
+    const newTemplates = templates.filter((t) => t.id !== id);
+    set({ templates: newTemplates });
+    saveTemplatesToStorage(newTemplates);
+  },
+
+  applyTemplate: (id) => {
+    const { templates, isExecutionMode, toggleExecutionMode } = get();
+    const template = templates.find((t) => t.id === id);
+    if (!template) return;
+
+    const newActions = template.actions.map((action, index) => ({
+      ...action,
+      id: generateId(),
+      status: 'pending' as ActionStatus,
+      order: index,
+    }));
+
+    if (isExecutionMode) {
+      toggleExecutionMode();
+    }
+
+    set({
+      actions: newActions,
+      selectedIds: [],
+      currentActionIndex: 0,
+    });
+    saveToStorage(newActions);
+  },
+
+  updateTemplate: (id, updates) => {
+    const { templates } = get();
+    const newTemplates = templates.map((t) =>
+      t.id === id ? { ...t, ...updates, updatedAt: Date.now() } : t
+    );
+    set({ templates: newTemplates });
+    saveTemplatesToStorage(newTemplates);
   },
 }));

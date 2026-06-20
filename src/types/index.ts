@@ -65,3 +65,12 @@ export const STATUS_OPTIONS: { value: ActionStatus; label: string }[] = [
   { value: 'reduce', label: '需降强度' },
   { value: 'skip', label: '跳过' },
 ];
+
+export interface WorkoutTemplate {
+  id: string;
+  name: string;
+  description: string;
+  actions: WorkoutAction[];
+  createdAt: number;
+  updatedAt: number;
+}
