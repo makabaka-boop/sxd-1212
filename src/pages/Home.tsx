@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Header } from '../components/Header';
 import { FilterPanel } from '../components/FilterPanel';
 import { ActionList } from '../components/ActionList';
@@ -7,10 +7,11 @@ import { BatchToolbar } from '../components/BatchToolbar';
 import { RiskAlert } from '../components/RiskAlert';
 import { ExecutionMode } from '../components/ExecutionMode';
 import { useWorkoutStore } from '../store/useWorkoutStore';
+import { filterActions } from '../utils/filterActions';
 import type { WorkoutAction } from '../types';
 
 export default function Home() {
-  const { init, isExecutionMode, getFilteredActions } = useWorkoutStore();
+  const { init, isExecutionMode, actions, filters } = useWorkoutStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<WorkoutAction | null>(
     null
@@ -35,7 +36,9 @@ export default function Home() {
     setEditingAction(null);
   };
 
-  const filteredActions = getFilteredActions().sort((a, b) => a.order - b.order);
+  const filteredActions = useMemo(() => {
+    return filterActions(actions, filters).sort((a, b) => a.order - b.order);
+  }, [actions, filters]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">

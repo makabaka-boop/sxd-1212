@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import {
   X,
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { INTENSITY_OPTIONS, STATUS_OPTIONS } from '../types';
+import type { ActionStatus } from '../types';
 import {
   calculateActionDuration,
   calculateTotalDuration,
@@ -51,19 +52,26 @@ export function ExecutionMode() {
     ? INTENSITY_OPTIONS.find((i) => i.value === currentAction.intensity)
     : null;
 
-  const handleComplete = () => {
-    updateCurrentActionStatus('completed');
-    if (currentActionIndex < sortedActions.length - 1) {
+  useEffect(() => {
+    const hasPending = actions.some((a) => a.status === 'pending');
+    if (!hasPending && currentActionIndex < actions.length) {
+      const current = sortedActions[currentActionIndex];
+      if (current && current.status !== 'pending') {
+        setCurrentActionIndex(actions.length);
+      }
+    }
+  }, [actions, currentActionIndex, sortedActions, setCurrentActionIndex]);
+
+  const handleStatusUpdate = (status: ActionStatus) => {
+    updateCurrentActionStatus(status);
+    
+    if (status !== 'reduce' && currentActionIndex < sortedActions.length - 1) {
       nextAction();
     }
   };
 
-  const handleSkip = () => {
-    updateCurrentActionStatus('skip');
-    if (currentActionIndex < sortedActions.length - 1) {
-      nextAction();
-    }
-  };
+  const handleComplete = () => handleStatusUpdate('completed');
+  const handleSkip = () => handleStatusUpdate('skip');
 
   const handleReduce = () => {
     updateCurrentActionStatus('reduce');

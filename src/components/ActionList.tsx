@@ -18,6 +18,7 @@ import { ActionCard } from './ActionCard';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import type { WorkoutAction } from '../types';
 import { detectRisks } from '../utils/riskDetection';
+import { filterActions } from '../utils/filterActions';
 
 interface ActionListProps {
   onEditAction: (action: WorkoutAction) => void;
@@ -28,7 +29,7 @@ export function ActionList({ onEditAction }: ActionListProps) {
     actions,
     selectedIds,
     reorderActions,
-    getFilteredActions,
+    filters,
     plannedDuration,
   } = useWorkoutStore();
 
@@ -44,8 +45,8 @@ export function ActionList({ onEditAction }: ActionListProps) {
   );
 
   const filteredActions = useMemo(() => {
-    return getFilteredActions().sort((a, b) => a.order - b.order);
-  }, [getFilteredActions]);
+    return filterActions(actions, filters).sort((a, b) => a.order - b.order);
+  }, [actions, filters]);
 
   const riskActionIds = useMemo(() => {
     const risks = detectRisks(actions, plannedDuration);

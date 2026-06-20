@@ -1,19 +1,23 @@
+import { useMemo } from 'react';
 import { X, CheckSquare, Square } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { STATUS_OPTIONS } from '../types';
-import type { ActionStatus } from '../types';
+import type { ActionStatus, WorkoutAction } from '../types';
+import { filterActions } from '../utils/filterActions';
 
 export function BatchToolbar() {
   const {
     selectedIds,
     actions,
+    filters,
     batchUpdateStatus,
     clearSelection,
     selectAll,
-    getFilteredActions,
   } = useWorkoutStore();
 
-  const filteredActions = getFilteredActions().sort((a, b) => a.order - b.order);
+  const filteredActions = useMemo(() => {
+    return filterActions(actions, filters).sort((a, b) => a.order - b.order);
+  }, [actions, filters]);
   const filteredIds = filteredActions.map((a) => a.id);
   const allSelected =
     filteredIds.length > 0 &&
