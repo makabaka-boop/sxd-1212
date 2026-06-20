@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -7,8 +8,13 @@ import {
   Edit3,
   Clock,
   AlertTriangle,
+  ChevronDown,
+  CheckCircle2,
+  Circle,
+  SkipForward,
+  ArrowDownCircle,
 } from 'lucide-react';
-import type { WorkoutAction } from '../types';
+import type { WorkoutAction, ActionStatus } from '../types';
 import { INTENSITY_OPTIONS, STATUS_OPTIONS } from '../types';
 import { calculateActionDuration, formatDurationShort } from '../utils/timeCalculator';
 import { useWorkoutStore } from '../store/useWorkoutStore';
@@ -23,6 +29,23 @@ interface ActionCardProps {
 export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardProps) {
   const { toggleSelect, duplicateAction, deleteAction, updateAction } =
     useWorkoutStore();
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsStatusOpen(false);
+      }
+    };
+    if (isStatusOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isStatusOpen]);
 
   const {
     attributes,
@@ -52,10 +75,29 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
   };
 
   const statusColorMap = {
-    pending: 'bg-zinc-700 text-zinc-300',
-    completed: 'bg-emerald-900/50 text-emerald-400',
-    reduce: 'bg-amber-900/50 text-amber-400',
-    skip: 'bg-zinc-800 text-zinc-500 line-through',
+    pending: 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600',
+    completed: 'bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900/70',
+    reduce: 'bg-amber-900/50 text-amber-400 hover:bg-amber-900/70',
+    skip: 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 line-through',
+  };
+
+  const statusDropdownColorMap = {
+    pending: 'text-zinc-300 hover:bg-zinc-700',
+    completed: 'text-emerald-400 hover:bg-emerald-900/40',
+    reduce: 'text-amber-400 hover:bg-amber-900/40',
+    skip: 'text-zinc-500 hover:bg-zinc-700 line-through',
+  };
+
+  const statusIconMap = {
+    pending: Circle,
+    completed: CheckCircle2,
+    reduce: ArrowDownCircle,
+    skip: SkipForward,
+  };
+
+  const handleStatusChange = (newStatus: ActionStatus) => {
+    updateAction(action.id, { status: newStatus });
+    setIsStatusOpen(false);
   };
 
   return (
@@ -127,13 +169,51 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
               <span className="font-mono">{formatDurationShort(totalDuration)}</span>
             </div>
 
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                statusColorMap[action.status]
-              }`}
+            <div
+              className="relative"
+              ref={statusDropdownRef}
+              onClick={(e) => e.stopPropagation()}
             >
-              {statusInfo?.label}
-            </span>
+              <button
+                onClick={() => setIsStatusOpen(!isStatusOpen)}
+                className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                  statusColorMap[action.status]
+                }`}
+              >
+                {(() => {
+                  const StatusIcon = statusIconMap[action.status];
+                  return <StatusIcon className="w-3 h-3" />;
+                })()}
+                <span>{statusInfo?.label}</span>
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+
+              {isStatusOpen && (
+                <div className="absolute top-full left-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl py-1 z-50 min-w-[120px]">
+                  {STATUS_OPTIONS.map((option) => {
+                    const OptionIcon = statusIconMap[option.value];
+                    const isActive = option.value === action.status;
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => handleStatusChange(option.value)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
+                          isActive
+                            ? 'bg-zinc-800 text-white'
+                            : statusDropdownColorMap[option.value]
+                        }`}
+                      >
+                        <OptionIcon className="w-3.5 h-3.5" />
+                        <span>{option.label}</span>
+                        {isActive && (
+                          <CheckCircle2 className="w-3 h-3 ml-auto text-orange-500" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {action.notes && (

@@ -21,7 +21,7 @@ export function ProgressOverview() {
     [actions]
   );
 
-  const planVsActualDiff = plannedDuration - progress.totalDuration;
+  const planVsActualDiff = plannedDuration - progress.effectiveDuration;
 
   if (progress.totalActions === 0) {
     return null;
@@ -63,7 +63,7 @@ export function ProgressOverview() {
             <span className="text-xs text-zinc-400">总训练时长</span>
           </div>
           <div className="text-lg font-bold text-white">
-            {formatDurationShort(progress.totalDuration)}
+            {formatDurationShort(progress.effectiveDuration)}
           </div>
           {plannedDuration > 0 && (
             <div
@@ -86,7 +86,7 @@ export function ProgressOverview() {
           <div className="text-lg font-bold text-emerald-400">
             {progress.completedCount}
             <span className="text-xs text-emerald-500 ml-1 font-normal">
-              / {progress.totalActions}
+              / {progress.effectiveActions}
             </span>
           </div>
           <div className="text-xs text-emerald-500/80 mt-0.5">
@@ -100,14 +100,14 @@ export function ProgressOverview() {
             <span className="text-xs text-zinc-400">待训练</span>
           </div>
           <div className="text-lg font-bold text-white">
-            {progress.pendingCount}
+            {progress.pendingCount + progress.reduceCount}
             <span className="text-xs text-zinc-500 ml-1 font-normal">
-              / {progress.totalActions}
+              / {progress.effectiveActions}
             </span>
           </div>
           <div className="text-xs text-zinc-500 mt-0.5">
-            {progress.pendingCount > 0
-              ? `占比 ${Math.round((progress.pendingCount / progress.totalActions) * 100)}%`
+            {progress.remainingDuration > 0
+              ? `预计 ${formatDurationShort(progress.remainingDuration)}`
               : '全部安排完毕'}
           </div>
         </div>

@@ -74,13 +74,17 @@ export function calculateWorkoutProgress(actions: WorkoutAction[]): WorkoutProgr
     })
   );
 
+  const effectiveActions = completedCount + pendingCount + reduceCount;
+  const remainingDuration = effectiveDuration - completedDuration;
+
   const overallPercentage =
-    totalActions > 0
-      ? Math.round((completedCount / totalActions) * 100)
+    effectiveActions > 0
+      ? Math.round((completedCount / effectiveActions) * 100)
       : 0;
 
   return {
     totalActions,
+    effectiveActions,
     totalDuration,
     completedCount,
     pendingCount,
@@ -88,6 +92,7 @@ export function calculateWorkoutProgress(actions: WorkoutAction[]): WorkoutProgr
     reduceCount,
     completedDuration,
     effectiveDuration,
+    remainingDuration,
     overallPercentage,
     muscleProgress,
   };

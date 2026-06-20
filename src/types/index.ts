@@ -87,6 +87,7 @@ export interface MuscleProgress {
 
 export interface WorkoutProgress {
   totalActions: number;
+  effectiveActions: number;
   totalDuration: number;
   completedCount: number;
   pendingCount: number;
@@ -94,6 +95,7 @@ export interface WorkoutProgress {
   reduceCount: number;
   completedDuration: number;
   effectiveDuration: number;
+  remainingDuration: number;
   overallPercentage: number;
   muscleProgress: MuscleProgress[];
 }

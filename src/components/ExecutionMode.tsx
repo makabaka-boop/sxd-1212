@@ -43,11 +43,11 @@ export function ExecutionMode() {
     [actions]
   );
 
-  const remainingDuration = progress.totalDuration - progress.completedDuration;
+  const remainingDuration = progress.remainingDuration;
   const progressPercentage = progress.overallPercentage;
 
   const completedCount = progress.completedCount;
-  const totalCount = progress.totalActions;
+  const totalCount = progress.effectiveActions;
 
   const intensityInfo = currentAction
     ? INTENSITY_OPTIONS.find((i) => i.value === currentAction.intensity)
@@ -126,7 +126,7 @@ export function ExecutionMode() {
             动作 {currentActionIndex + 1} / {sortedActions.length}
           </div>
           <div className="text-lg font-bold text-white">
-            {formatDuration(progress.completedDuration)} / {formatDuration(progress.totalDuration)}
+            {formatDuration(progress.completedDuration)} / {formatDuration(progress.effectiveDuration)}
           </div>
         </div>
 
