@@ -74,3 +74,26 @@ export interface WorkoutTemplate {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface MuscleProgress {
+  muscle: string;
+  total: number;
+  completed: number;
+  pending: number;
+  skip: number;
+  reduce: number;
+  percentage: number;
+}
+
+export interface WorkoutProgress {
+  totalActions: number;
+  totalDuration: number;
+  completedCount: number;
+  pendingCount: number;
+  skipCount: number;
+  reduceCount: number;
+  completedDuration: number;
+  effectiveDuration: number;
+  overallPercentage: number;
+  muscleProgress: MuscleProgress[];
+}

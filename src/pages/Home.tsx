@@ -8,6 +8,7 @@ import { RiskAlert } from '../components/RiskAlert';
 import { ExecutionMode } from '../components/ExecutionMode';
 import { SaveTemplateDialog } from '../components/SaveTemplateDialog';
 import { TemplatePanel } from '../components/TemplatePanel';
+import { ProgressOverview } from '../components/ProgressOverview';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { filterActions } from '../utils/filterActions';
 import type { WorkoutAction } from '../types';
@@ -57,6 +58,10 @@ export default function Home() {
 
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
+            <div className="mb-4">
+              <ProgressOverview />
+            </div>
+
             <div className="mb-4">
               <RiskAlert />
             </div>

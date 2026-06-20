@@ -15,10 +15,9 @@ import { INTENSITY_OPTIONS, STATUS_OPTIONS } from '../types';
 import type { ActionStatus } from '../types';
 import {
   calculateActionDuration,
-  calculateTotalDuration,
-  calculateCompletedDuration,
   formatDuration,
 } from '../utils/timeCalculator';
+import { calculateWorkoutProgress } from '../utils/progressCalculator';
 
 export function ExecutionMode() {
   const {
@@ -39,14 +38,16 @@ export function ExecutionMode() {
   const currentAction = sortedActions[currentActionIndex];
   const nextActionItem = sortedActions[currentActionIndex + 1];
 
-  const totalDuration = calculateTotalDuration(actions);
-  const completedDuration = calculateCompletedDuration(actions);
-  const remainingDuration = totalDuration - completedDuration;
+  const progress = useMemo(
+    () => calculateWorkoutProgress(actions),
+    [actions]
+  );
 
-  const progress = totalDuration > 0 ? (completedDuration / totalDuration) * 100 : 0;
+  const remainingDuration = progress.totalDuration - progress.completedDuration;
+  const progressPercentage = progress.overallPercentage;
 
-  const completedCount = actions.filter((a) => a.status === 'completed').length;
-  const totalCount = actions.length;
+  const completedCount = progress.completedCount;
+  const totalCount = progress.totalActions;
 
   const intensityInfo = currentAction
     ? INTENSITY_OPTIONS.find((i) => i.value === currentAction.intensity)
@@ -125,7 +126,7 @@ export function ExecutionMode() {
             动作 {currentActionIndex + 1} / {sortedActions.length}
           </div>
           <div className="text-lg font-bold text-white">
-            {formatDuration(completedDuration)} / {formatDuration(totalDuration)}
+            {formatDuration(progress.completedDuration)} / {formatDuration(progress.totalDuration)}
           </div>
         </div>
 
@@ -135,7 +136,7 @@ export function ExecutionMode() {
       <div className="h-1 bg-zinc-800">
         <div
           className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500"
-          style={{ width: `${progress}%` }}
+          style={{ width: `${progressPercentage}%` }}
         />
       </div>
 

@@ -5,6 +5,7 @@ import type {
   ActionStatus,
   Intensity,
   WorkoutTemplate,
+  WorkoutProgress,
 } from '../types';
 import { defaultActions } from '../data/defaultActions';
 import {
@@ -15,6 +16,7 @@ import {
   loadTemplatesFromStorage,
   saveTemplatesToStorage,
 } from '../utils/storage';
+import { calculateWorkoutProgress } from '../utils/progressCalculator';
 
 interface WorkoutState {
   actions: WorkoutAction[];
@@ -50,6 +52,7 @@ interface WorkoutState {
   deleteTemplate: (id: string) => void;
   applyTemplate: (id: string) => void;
   updateTemplate: (id: string, updates: Partial<WorkoutTemplate>) => void;
+  getWorkoutProgress: () => WorkoutProgress;
 }
 
 function generateId(): string {
@@ -360,5 +363,10 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     );
     set({ templates: newTemplates });
     saveTemplatesToStorage(newTemplates);
+  },
+
+  getWorkoutProgress: () => {
+    const { actions } = get();
+    return calculateWorkoutProgress(actions);
   },
 }));
