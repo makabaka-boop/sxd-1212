@@ -78,7 +78,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     const storedActions = loadFromStorage();
     const storedDuration = loadPlanDuration();
     const storedTemplates = loadTemplatesFromStorage();
-    if (storedActions && storedActions.length > 0) {
+    if (storedActions !== null) {
       set({ actions: storedActions, plannedDuration: storedDuration, templates: storedTemplates });
     } else {
       set({ actions: defaultActions, plannedDuration: storedDuration, templates: storedTemplates });
@@ -252,7 +252,12 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
           ...a,
           order: index,
         }));
-        set({ actions: reindexedActions, selectedIds: [] });
+        set({
+          actions: reindexedActions,
+          selectedIds: [],
+          filters: initialFilters,
+          currentActionIndex: 0,
+        });
         saveToStorage(reindexedActions);
         return true;
       }
@@ -324,7 +329,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   },
 
   applyTemplate: (id) => {
-    const { templates, isExecutionMode, toggleExecutionMode } = get();
+    const { templates, isExecutionMode, toggleExecutionMode, resetFilters } = get();
     const template = templates.find((t) => t.id === id);
     if (!template) return;
 
@@ -343,6 +348,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       actions: newActions,
       selectedIds: [],
       currentActionIndex: 0,
+      filters: initialFilters,
     });
     saveToStorage(newActions);
   },

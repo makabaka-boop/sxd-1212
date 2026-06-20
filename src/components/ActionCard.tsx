@@ -79,9 +79,9 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
           <GripVertical className="w-4 h-4" />
         </button>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-28">
           <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3
                   className={`font-semibold text-white truncate ${
@@ -102,7 +102,7 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
             </div>
 
             <span
-              className={`text-xs px-2 py-0.5 rounded-full border ${
+              className={`text-xs px-2 py-0.5 rounded-full border flex-shrink-0 ${
                 intensityColorMap[action.intensity]
               }`}
             >
@@ -110,7 +110,7 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
             </span>
           </div>
 
-          <div className="mt-3 flex items-center gap-4 text-sm">
+          <div className="mt-3 flex items-center gap-4 text-sm flex-wrap">
             <div className="flex items-center gap-1.5 text-zinc-300">
               <span className="text-orange-500 font-mono font-bold">
                 {action.sets}
@@ -128,7 +128,7 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
             </div>
 
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
                 statusColorMap[action.status]
               }`}
             >
@@ -145,7 +145,7 @@ export function ActionCard({ action, isSelected, hasRisk, onEdit }: ActionCardPr
       </div>
 
       <div
-        className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <button
