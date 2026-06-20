@@ -3,9 +3,10 @@ import type {
   WorkoutAction,
   FilterOptions,
   ActionStatus,
-  Intensity,
   WorkoutTemplate,
   WorkoutProgress,
+  ApplyTemplateOptions,
+  TemplateCategory,
 } from '../types';
 import { defaultActions } from '../data/defaultActions';
 import {
@@ -48,10 +49,16 @@ interface WorkoutState {
   exportJSON: () => string;
   importJSON: (jsonString: string) => boolean;
   getFilteredActions: () => WorkoutAction[];
-  saveAsTemplate: (name: string, description: string) => void;
+  saveAsTemplate: (
+    name: string,
+    description: string,
+    category: TemplateCategory,
+    targetGoal: string
+  ) => void;
   deleteTemplate: (id: string) => void;
-  applyTemplate: (id: string) => void;
+  applyTemplate: (id: string, options: ApplyTemplateOptions) => void;
   updateTemplate: (id: string, updates: Partial<WorkoutTemplate>) => void;
+  recordTemplateUsage: (id: string) => void;
   getWorkoutProgress: () => WorkoutProgress;
 }
 
@@ -308,16 +315,20 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     });
   },
 
-  saveAsTemplate: (name, description) => {
+  saveAsTemplate: (name, description, category, targetGoal) => {
     const { actions, templates } = get();
     const now = Date.now();
     const newTemplate: WorkoutTemplate = {
       id: generateId(),
       name,
       description,
+      category,
+      targetGoal,
       actions: actions.map((a) => ({ ...a })),
       createdAt: now,
       updatedAt: now,
+      lastUsedAt: null,
+      usageCount: 0,
     };
     const newTemplates = [...templates, newTemplate];
     set({ templates: newTemplates });
@@ -331,19 +342,63 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     saveTemplatesToStorage(newTemplates);
   },
 
-  applyTemplate: (id) => {
-    const { templates, isExecutionMode, toggleExecutionMode, resetFilters } = get();
+  recordTemplateUsage: (id) => {
+    const { templates } = get();
+    const newTemplates = templates.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            lastUsedAt: Date.now(),
+            usageCount: t.usageCount + 1,
+            updatedAt: Date.now(),
+          }
+        : t
+    );
+    set({ templates: newTemplates });
+    saveTemplatesToStorage(newTemplates);
+  },
+
+  applyTemplate: (id, options) => {
+    const { templates, isExecutionMode } = get();
     const template = templates.find((t) => t.id === id);
     if (!template) return;
 
-    const newActions = template.actions.map((action, index) => ({
-      ...action,
-      id: generateId(),
-      status: 'pending' as ActionStatus,
-      order: index,
-    }));
+    const { mode, targetMuscles = [] } = options;
+
+    let filteredActions = template.actions;
+    if (mode === 'partial' && targetMuscles.length > 0) {
+      filteredActions = template.actions.filter((a) =>
+        targetMuscles.includes(a.targetMuscle)
+      );
+    }
+
+    if (filteredActions.length === 0) {
+      return;
+    }
+
+    let newActions: WorkoutAction[] = [];
+    const { actions: currentActions } = get();
+
+    if (mode === 'replace') {
+      newActions = filteredActions.map((action, index) => ({
+        ...action,
+        id: generateId(),
+        status: 'pending' as ActionStatus,
+        order: index,
+      }));
+    } else if (mode === 'append' || mode === 'partial') {
+      const baseOrder = currentActions.length;
+      const appendedActions = filteredActions.map((action, index) => ({
+        ...action,
+        id: generateId(),
+        status: 'pending' as ActionStatus,
+        order: baseOrder + index,
+      }));
+      newActions = [...currentActions, ...appendedActions];
+    }
 
     if (isExecutionMode) {
+      const { toggleExecutionMode } = get();
       toggleExecutionMode();
     }
 
@@ -354,6 +409,9 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       filters: initialFilters,
     });
     saveToStorage(newActions);
+
+    const { recordTemplateUsage } = get();
+    recordTemplateUsage(id);
   },
 
   updateTemplate: (id, updates) => {

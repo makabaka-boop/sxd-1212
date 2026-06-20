@@ -43,6 +43,19 @@ export const TARGET_MUSCLES = [
   '全身',
 ];
 
+export const TEMPLATE_CATEGORIES = [
+  '增肌',
+  '减脂',
+  '塑形',
+  '康复',
+  '力量',
+  '耐力',
+  '灵活性',
+  '综合',
+] as const;
+
+export type TemplateCategory = (typeof TEMPLATE_CATEGORIES)[number];
+
 export const EQUIPMENTS = [
   '哑铃',
   '杠铃',
@@ -70,9 +83,20 @@ export interface WorkoutTemplate {
   id: string;
   name: string;
   description: string;
+  category: TemplateCategory;
+  targetGoal: string;
   actions: WorkoutAction[];
   createdAt: number;
   updatedAt: number;
+  lastUsedAt: number | null;
+  usageCount: number;
+}
+
+export type ApplyTemplateMode = 'replace' | 'append' | 'partial';
+
+export interface ApplyTemplateOptions {
+  mode: ApplyTemplateMode;
+  targetMuscles?: string[];
 }
 
 export interface MuscleProgress {

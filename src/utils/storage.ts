@@ -87,7 +87,16 @@ export function loadTemplatesFromStorage(): WorkoutTemplate[] {
   try {
     const data = localStorage.getItem(TEMPLATES_KEY);
     if (data) {
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed.map((t) => ({
+          ...t,
+          category: t.category || '综合',
+          targetGoal: t.targetGoal || '',
+          lastUsedAt: t.lastUsedAt || null,
+          usageCount: t.usageCount || 0,
+        }));
+      }
     }
     return [];
   } catch (error) {
